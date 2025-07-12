@@ -408,7 +408,16 @@ func (m *OIDCConfig) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ClientAuthenticationMethod
+	if _, ok := OIDCConfig_ClientAuthenticationMethod_name[int32(m.GetClientAuthenticationMethod())]; !ok {
+		err := OIDCConfigValidationError{
+			field:  "ClientAuthenticationMethod",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if utf8.RuneCountInString(m.GetClientId()) < 1 {
 		err := OIDCConfigValidationError{

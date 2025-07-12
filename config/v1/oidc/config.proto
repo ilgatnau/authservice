@@ -147,7 +147,7 @@ message OIDCConfig {
 
   // Available [Client Authentication](https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication)
   // methods
-  ClientAuthenticationMethod client_authentication_method = 24;
+  ClientAuthenticationMethod client_authentication_method = 24 [(validate.rules).enum.defined_only = true];
 
   // The OIDC client ID assigned to the filter to be used in the
   // [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest).

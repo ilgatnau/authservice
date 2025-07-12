@@ -76,6 +76,9 @@ func TestOIDCUsesTheConfiguredProxy(t *testing.T) {
 	// Assume this redirect as enough to consider the test successful and relay the details into the TestOIDC test.
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.NoError(t, client.ParseLoginForm(res.Body, keyCloakLoginFormID))
+
+	// Stop the IDP proxy end of test cleanup
+	docker.StopDockerService(idpProxyService)
 }
 
 func TestOIDC(t *testing.T) {

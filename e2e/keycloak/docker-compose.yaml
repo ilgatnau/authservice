@@ -17,62 +17,62 @@ version: "3.9"
 services:
   # This is a proxy that intercepts requests to the target application and calls the authservice to
   # perform the OIDC authorization check.
-  envoy:
-    depends_on:
-      ext-authz:
-        condition: service_started
-    image: envoyproxy/envoy:v1.29-latest
-    platform: linux/${ARCH:-amd64}
-    command: -c /etc/envoy/envoy-config.yaml --log-level warning
-    ports:
-      - "8443:443"
-    volumes:
-      - type: bind
-        source: envoy-config.yaml
-        target: /etc/envoy/envoy-config.yaml
-      - type: bind
-        source: certs
-        target: /etc/envoy/certs
+  # envoy:
+  #   depends_on:
+  #     ext-authz:
+  #       condition: service_started
+  #   image: envoyproxy/envoy:v1.29-latest
+  #   platform: linux/${ARCH:-amd64}
+  #   command: -c /etc/envoy/envoy-config.yaml --log-level warning
+  #   ports:
+  #     - "8443:443"
+  #   volumes:
+  #     - type: bind
+  #       source: envoy-config.yaml
+  #       target: /etc/envoy/envoy-config.yaml
+  #     - type: bind
+  #       source: certs
+  #       target: /etc/envoy/certs
 
   # This is a simple HTTP server that will be used as the target application for the tests.
-  http-echo:
-    image: jmalloc/echo-server:0.3.6
-    platform: linux/${ARCH:-amd64}
-    hostname: http-echo
+  # http-echo:
+  #   image: jmalloc/echo-server:0.3.6
+  #   platform: linux/${ARCH:-amd64}
+  #   hostname: http-echo
 
   # idp-proxy is a proxy that will be used to forward traffic to the external authorization server
   # Set the OIDC config `proxy_url` to `http://idp-proxy:9000` in the `authservice` config to use this proxy.
-  idp-proxy:
-    image: envoyproxy/envoy:v1.29-latest
-    platform: linux/${ARCH:-amd64}
-    command: -c /etc/envoy/envoy-config.yaml --log-level warning
-    ports:
-      - "9000:9000" # Expose the proxy to auth0
-    volumes:
-      - type: bind
-        source: idp-proxy-config.yaml
-        target: /etc/envoy/envoy-config.yaml
-    extra_hosts: # Required when running on Linux
-      - "host.docker.internal:host-gateway"
+  # idp-proxy:
+  #   image: envoyproxy/envoy:v1.29-latest
+  #   platform: linux/${ARCH:-amd64}
+  #   command: -c /etc/envoy/envoy-config.yaml --log-level warning
+  #   ports:
+  #     - "9000:9000" # Expose the proxy to auth0
+  #   volumes:
+  #     - type: bind
+  #       source: idp-proxy-config.yaml
+  #       target: /etc/envoy/envoy-config.yaml
+  #   extra_hosts: # Required when running on Linux
+  #     - "host.docker.internal:host-gateway"
 
   # This is the `authservice` image that should be up-to-date when running the tests.
-  ext-authz:
-    depends_on:
-      setup-keycloak:
-        condition: service_completed_successfully
-      idp-proxy:
-        condition: service_started
-    image: ${DOCKER_HUB}/authservice:latest-${ARCH:-amd64}
-    platform: linux/${ARCH:-amd64}
-    volumes:
-      - type: bind
-        source: authz-config.json
-        target: /etc/authservice/config.json
-      - type: bind
-        source: certs
-        target: /etc/authservice/certs
-    extra_hosts:  # Required when running on Linux
-      - "host.docker.internal:host-gateway"
+  # ext-authz:
+  #   depends_on:
+  #     setup-keycloak:
+  #       condition: service_completed_successfully
+  #     idp-proxy:
+  #       condition: service_started
+  #   image: ${DOCKER_HUB}/authservice:latest-${ARCH:-amd64}
+  #   platform: linux/${ARCH:-amd64}
+  #   volumes:
+  #     - type: bind
+  #       source: authz-config.json
+  #       target: /etc/authservice/config.json
+  #     - type: bind
+  #       source: certs
+  #       target: /etc/authservice/certs
+  #   extra_hosts:  # Required when running on Linux
+  #     - "host.docker.internal:host-gateway"
 
   # Redis container to be used to persist the session information and OIDC authorization
   # state.
