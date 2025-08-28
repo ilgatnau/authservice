@@ -38,6 +38,7 @@ func main() {
 		fileWatcher = &watch.FileWatcherService{}
 		tlsPool     = http.NewTLSConfigPool(fileWatcher)
 		jwks        = oidc.NewJWKSProvider(&configFile.Config, tlsPool)
+		jwksServer  = server.NewJwksServer(&configFile.Config)
 		sessions    = oidc.NewSessionStoreFactory(&configFile.Config, fileWatcher)
 		envoyAuthz  = server.NewExtAuthZFilter(&configFile.Config, tlsPool, jwks, sessions)
 		authzServer = server.New(&configFile.Config, envoyAuthz.Register)
@@ -67,6 +68,7 @@ func main() {
 		configLog,         // log the configuration
 		fipsLog,           // log whether FIPS is enabled
 		jwks,              // start the JWKS provider
+		jwksServer,        // start the JWKS server
 		sessions,          // start the session store
 		authzServer,       // start the server
 		healthz,           // start the health server

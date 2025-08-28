@@ -34,6 +34,10 @@ spec:
       targetPort: 10004
       name: grpc-health
       protocol: TCP
+    - port: 10005
+      targetPort: 10005
+      name: grpc-jwks
+      protocol: TCP
   selector:
     app: authservice
 ---

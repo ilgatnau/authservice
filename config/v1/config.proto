@@ -153,6 +153,21 @@ message Config {
   // The path for the health server to attend.
   // Optional. Defaults to "/healthz".
   string health_listen_path = 14;
+
+  // The Authservice provides an HTTP server to serve jwks within the mesh.
+  // This is required in some specific use cases where JWKS endpoint is behind a proxy
+  // and envoy proxy settings will have a wider impact like not being able to connect to STS
+  // This configures the address for the jwks server to listen for.
+  // Optional. Defaults to the value of `listen_address`.
+  string health_listen_address = 15;
+
+  // The TCP port for the health server to listen for.
+  // Optional. Defaults 10004.
+  int32 health_listen_port = 16 [(validate.rules).int32.lt = 65536];
+
+  // The path for the health server to attend.
+  // Optional. Defaults to "/.well-known/jwks.json".
+  string health_listen_path = 17;
 }
 
 // Trigger rule to match against a request. The trigger rule is satisfied if
