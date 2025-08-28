@@ -15,6 +15,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -23,7 +24,9 @@ import (
 	"github.com/tetratelabs/telemetry"
 
 	configv1 "github.com/istio-ecosystem/authservice/config/gen/go/v1"
+	oidcv1 "github.com/istio-ecosystem/authservice/config/gen/go/v1/oidc"
 	"github.com/istio-ecosystem/authservice/internal"
+	"github.com/istio-ecosystem/authservice/internal/oidc"
 )
 
 const (
@@ -40,6 +43,7 @@ type jwksServer struct {
 	log    telemetry.Logger
 	config *configv1.Config
 	server *http.Server
+	jwks   oidc.JWKSProvider
 
 	// Listen allows overriding the default listener. It is meant to
 	// be used in tests.
@@ -98,23 +102,41 @@ func (js *jwksServer) getAddressAndPort() string {
 }
 
 func (js *jwksServer) getPath() string {
-	// path := js.config.GetHealthListenPath()
-	// if path != "" {
-	// 	return path
-	// }
+	path := js.config.GetHealthListenPath()
+	if path != "" {
+		return path
+	}
 	return HealthzPath
 }
 
 // ServeHTTP implements http.Handler.
 func (js *jwksServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := js.log.With("method", r.Method, "path", r.URL.Path)
-	listenPath := js.getPath()
 
-	if r.Method != http.MethodGet || r.URL.Path != listenPath {
-		log.Debug("invalid request")
-		http.Error(w, fmt.Sprintf("only GET %s is allowed", listenPath), http.StatusBadRequest)
+	jwksProvider := &oidc.DefaultJWKSProvider{}
+	ctx := context.Background()
+	jwks, err := jwksProvider.Get(ctx, &oidcv1.OIDCConfig{})
+
+	if err != nil {
+		log.Error("failed to get jwks", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jkwsKey, ok := jwks.LookupKeyID(r.URL.Path)
+
+	if !ok {
+		http.Error(w, "key not found", http.StatusNotFound)
+		return
+	}
+
+	keyJSON, err := jkwsKey.X509CertChain().MarshalJSON()
+	if err != nil {
+		log.Error("failed to marshal key to JSON", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+	w.Write(keyJSON)
 }

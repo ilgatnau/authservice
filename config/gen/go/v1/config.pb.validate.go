@@ -822,6 +822,21 @@ func (m *Config) validate(all bool) error {
 
 	// no validation rules for HealthListenPath
 
+	// no validation rules for JwksListenAddress
+
+	if m.GetJwksListenPort() >= 65536 {
+		err := ConfigValidationError{
+			field:  "JwksListenPort",
+			reason: "value must be less than 65536",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for JwksListenPath
+
 	if len(errors) > 0 {
 		return ConfigMultiError(errors)
 	}

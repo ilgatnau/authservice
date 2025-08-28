@@ -342,6 +342,9 @@ For a simple example, see the [sample JSON in the bookinfo configmap template](h
 | health_listen_address | [string](#string) |  | The Authservice provides an HTTP server to check the health state. This configures the address for the health server to listen for. Optional. Defaults to the value of `listen_address`. |
 | health_listen_port | [int32](#int32) |  | The TCP port for the health server to listen for. Optional. Defaults 10004. |
 | health_listen_path | [string](#string) |  | The path for the health server to attend. Optional. Defaults to "/healthz". |
+| jwks_listen_address | [string](#string) |  | The Authservice provides an HTTP server to serve jwks within the mesh. This is required in some specific use cases where JWKS endpoint is behind a proxy and envoy proxy settings will have a wider impact like not being able to connect to STS This configures the address for the jwks server to listen for. Optional. Defaults to the value of `listen_address`. |
+| jwks_listen_port | [int32](#int32) |  | The TCP port for the health server to listen for. Optional. Defaults 10004. |
+| jwks_listen_path | [string](#string) |  | The path for the health server to attend. Optional. Defaults to "/.well-known/jwks.json". |
 
 
 
